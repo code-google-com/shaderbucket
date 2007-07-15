@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys, copy
+import sys, copy, os.path
 import xml.sax, xml.sax.handler, xml.sax.saxutils, xml.sax.xmlreader
 import wx
 from sbItem import Item
@@ -19,6 +19,7 @@ class Palette(Item):
         self.note = ""
         self.contents = []
         self.gui = None
+        self.filename = os.path.abspath(filename)
         if filename!="":
             self.load(filename)
             
@@ -31,11 +32,16 @@ class Palette(Item):
             
     # add a shader appearance as a child
     def addAppearance(self,appearance):
-        # make sure appearance's shader is loaded
-        shader_file = appearance.getAttribute( 'file' )
+        # appearance shader file
+        filename = appearance.getAttribute( 'file' )
+        
+        # get shader file relative to this palette
+        (root,ext) = os.path.splitext(filename)
+        shader_file = os.path.abspath( os.path.join( os.path.dirname( self.filename ), root ) )
         if not self.bucket.shaders.has_key( shader_file ):
             self.bucket.shaders[shader_file] = Shader( shader_file )
         appearance.shader = self.bucket.shaders[shader_file]
+        
         self.contents.append(copy.deepcopy(appearance))
         
     # add a palette as a child
@@ -105,6 +111,7 @@ class paletteReader(xml.sax.handler.ContentHandler):
         # mode
         self.mode = []
         self.bucket = parent.bucket
+        self.parent = parent
         pass    
 
     # start/end document
@@ -148,6 +155,8 @@ class paletteReader(xml.sax.handler.ContentHandler):
     def startPalette(self,attrs):
         if self.done_top_level:
             self.curr_palette = Palette(self.bucket) # create a new palette
+            self.curr_palette.filename = self.parent.filename
+            
         for name in attrs.getNames():
             self.curr_palette.setAttribute(name, attrs.getValue(name))
         if self.done_top_level:

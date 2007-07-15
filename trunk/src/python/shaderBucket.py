@@ -44,9 +44,6 @@ if __name__ == '__main__':
     # load and add a test palette
     test_palette = Palette(sb, "tests/palettes/palette.xml")
     sb.root.addPalette(test_palette)
-
-    test_shader = Shader("tests/shaders/simple.xml")
-    #test_shader.dump()
     
     # do some gui stuff
     gui = App(bucket = sb, redirect=False)

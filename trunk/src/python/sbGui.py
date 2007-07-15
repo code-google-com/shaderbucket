@@ -99,6 +99,7 @@ class MainFrame(wx.Frame):
         
         # splitter
         splitter = wx.SplitterWindow(main_panel, -1, style=wx.SP_LIVE_UPDATE)
+        splitter.SetSashSize(6)
 
         self.tree = PaletteTree( splitter, wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS )
         self.appearance = wx.Panel( splitter, -1, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_SUNKEN )
