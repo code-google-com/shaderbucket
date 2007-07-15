@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys, copy
+import sys, copy, os.path
 import xml.sax, xml.sax.handler, xml.sax.saxutils, xml.sax.xmlreader
 from sbItem import Item
 
@@ -34,18 +34,23 @@ class Shader(Item):
         for item in self.contents:
             item.dump()            
     def addParameter(self, parameter):
-        self.parameters.append(copy.deepcopy(parameter))
+        self.contents.append(copy.deepcopy(parameter))
     def load(self,filename):
-        parser = xml.sax.make_parser()
-        parser.setContentHandler( shaderReader(self) )
-        #parser.parse( filename )
+        interfacefile = filename+".xml"
+        if os.path.exists(interfacefile):
+            parser = xml.sax.make_parser()
+            parser.setContentHandler( shaderReader(self) )
+            parser.parse( interfacefile )
         
 #==============================================================================
 
 # Create a class to handle reader palette files
 class shaderReader(xml.sax.handler.ContentHandler):
     # init palette reader
-    def __init__(self, parent):  
+    def __init__(self, parent): 
+        self.parent = parent
+        self.curr_parameter = None 
+        self.mode = []
         pass    
 
     # start/end document
@@ -56,10 +61,41 @@ class shaderReader(xml.sax.handler.ContentHandler):
 
     # start/end element
     def startElement(self,name,attrs):
-        pass
-    def endElement(self,name):
-        pass
+        if name=="shader":
+            self.startShader(attrs)
+        if name=="parameter":
+            self.startParameter(attrs)
+        if name=="group":
+            self.startGroup(attrs)
+        self.mode.append( name )
+    def endElement(self,name):   
+        if name=="shader":
+            self.endShader()
+        if name=="parameter":
+            self.endParameter()
+        if name=="group":
+            self.endGroup() 
+        self.mode = self.mode[:-1]
 
-    # element contents
+   # element contents
     def characters(self,content):
+        # description values
+        if self.mode[-1]=="description":
+            self.parent.description = content
+            
+    def startShader(self,attrs):
+        for name in attrs.getNames():
+            self.parent.setAttribute(name, attrs.getValue(name))
+    def endShader(self):
+        pass
+    def startParameter(self,attrs):
+        param = ShaderParameter()
+        for name in attrs.getNames():
+            param.setAttribute(name, attrs.getValue(name))
+        self.parent.addParameter(param)
+    def endParameter(self):
+        pass
+    def startGroup(self,attrs):
+        pass
+    def endGroup(self):
         pass
