@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            XML Schema for validating shader interfaces
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <!-- our document element -->
+    <xsd:element name="shader" type="Shader" />
+    
+    <!-- shader type -->
+    <xsd:complexType name="Shader">
+        <xsd:sequence>
+            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1" />
+	        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+	            <xsd:element name="parameter" type="Parameter" />
+                <xsd:element name="group" type="Shader" />
+                <xsd:element name="sep" type="Separator" />
+            </xsd:choice>
+		</xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="icon" type="xsd:string" use="optional"/>
+        <xsd:attribute name="expand" type="xsd:boolean" use="optional" />
+		<xsd:attribute name="file" type="xsd:string" use="optional" />
+    </xsd:complexType>
+    
+    <!-- parameter type -->
+    <xsd:complexType name="Parameter">
+        <xsd:complexContent>
+            <xsd:restriction base="xsd:anyType">
+                <xsd:attribute name="name" type="xsd:string" use="required" />
+                <xsd:attribute name="type" type="xsd:string" use="required" />
+				<xsd:attribute name="default" type="xsd:string" use="required" />
+                <xsd:attribute name="label" type="xsd:string" use="optional" />
+                <xsd:attribute name="help" type="xsd:string" use="optional" />
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <!-- separator type -->
+    <xsd:complexType name="Separator">
+        <xsd:complexContent>
+            <xsd:restriction base="xsd:anyType">
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>    
+
+</xsd:schema>
