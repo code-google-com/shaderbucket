@@ -25,25 +25,31 @@
 		<xsd:attribute name="file" type="xsd:string" use="optional" />
     </xsd:complexType>
     
+    <!-- enum type -->
+    <xsd:complexType name="Enum">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="value" type="xsd:integer"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+           
     <!-- parameter type -->
     <xsd:complexType name="Parameter">
-        <xsd:complexContent>
-            <xsd:restriction base="xsd:anyType">
-                <xsd:attribute name="name" type="xsd:string" use="required" />
-                <xsd:attribute name="type" type="xsd:string" use="required" />
-				<xsd:attribute name="default" type="xsd:string" use="required" />
-                <xsd:attribute name="label" type="xsd:string" use="optional" />
-                <xsd:attribute name="help" type="xsd:string" use="optional" />
-            </xsd:restriction>
-        </xsd:complexContent>
+        <xsd:sequence>
+            <xsd:element name="enum" type="Enum" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attribute name="type" type="xsd:string" use="required" />
+        <xsd:attribute name="default" type="xsd:string" use="required" />
+        <xsd:attribute name="label" type="xsd:string" use="optional" />
+        <xsd:attribute name="help" type="xsd:string" use="optional" />
     </xsd:complexType>
+    
+    <!-- enum parameter type -->
     
     <!-- separator type -->
     <xsd:complexType name="Separator">
-        <xsd:complexContent>
-            <xsd:restriction base="xsd:anyType">
-            </xsd:restriction>
-        </xsd:complexContent>
     </xsd:complexType>    
 
 </xsd:schema>

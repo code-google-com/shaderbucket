@@ -41,9 +41,11 @@ if __name__ == '__main__':
     sb = ShaderBucket()
     #sb.print_debug = True;
     
-    # load and add a test palette
-    test_palette = Palette(sb, "tests/palettes/palette.xml")
-    sb.root.addPalette(test_palette)
+    argv = sys.argv
+    argc = len(argv)
+    
+    for arg in argv[1:]:
+        sb.root.addPalette( Palette(sb, arg ) )
     
     # do some gui stuff
     gui = App(bucket = sb, redirect=False)
