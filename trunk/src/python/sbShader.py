@@ -2,8 +2,10 @@
 # encoding: utf-8
 
 import sys, copy, os.path
+import wx
 import xml.sax, xml.sax.handler, xml.sax.saxutils, xml.sax.xmlreader
 from sbItem import Item
+from sbWidgets import AppearancePane
 
 #==============================================================================
 
@@ -11,9 +13,21 @@ from sbItem import Item
 class ShaderParameter(Item):
     def __init__(self):
         Item.__init__(self)
+        self.changed = False
     def dump(self):
-        print "==shader parameter (%s, %s, %s)==" % (self.name, self.type, self.default)
-        Item.dump(self)   
+        print "==shader parameter (%s, %s, %s)==" % (self.getAttribute('name'), self.getAttribute('type'), self.getAttribute('default'))
+        if self.value:
+            print "value: " + self.value
+        Item.dump(self)
+    def setValue(self,value):
+        data_type = self.getAttribute('type') # validate against this type
+        self.value = value
+        self.changed = True
+    def hasChanged(self):
+        return self.changed
+    def initFromDefault(self):
+        self.setValue( self.getAttribute( 'default' ) )
+        self.changed = False
         
 class Separator(Item):
     def __init__(self):
@@ -23,24 +37,68 @@ class Separator(Item):
         Item.dump(self)
 
 class Shader(Item):
-    def __init__( self, filename="" ):
+    def __init__( self, filename=None ):
         Item.__init__(self)
         self.description = None
-        self.contents = []   
-        if filename!="":
-            self.load(filename)  
+        self.note = None
+        self.contents = []
+        self.gui = None
+        if filename:
+            self.load(filename)
     def dump(self):
         print "==shader=="
         for item in self.contents:
-            item.dump()            
+            item.dump()  
+    
+    # set all parameters to their defaults            
+    def initParametersFromDefault(self):
+        for item in self.contents:
+            item.initFromDefault()
+    
+    # add a parameter to the contents of this shader 
     def addParameter(self, parameter):
-        self.contents.append(copy.deepcopy(parameter))
+        name = parameter.getAttribute('name')
+        if self.findParameter(name)==-1:
+            self.contents.append(copy.deepcopy(parameter))
+        else:
+            print "Error: parameter "+name+" already exists!"
+            
+    # add a separator to the contents of this shader
+    def addSeparator(self):
+        self.contents.append(Separator())
+        
+    # load a shader interface file
     def load(self,filename):
         interfacefile = filename+".xml"
         if os.path.exists(interfacefile):
             parser = xml.sax.make_parser()
             parser.setContentHandler( shaderReader(self) )
             parser.parse( interfacefile )
+
+    # set a parameter value
+    def setValue( self, name, value ):
+        index = self.findParameter(name)
+        if index>-1:
+            self.contents[index].setValue(value)
+            return True
+        return False
+        
+    def findParameter(self,name):
+        index = -1
+        i = 0
+        for p in self.contents:
+            if p.getAttribute('name')==name:
+                index = i
+            i+=1
+        return index
+        
+    # create an interface pane for a shader instance
+    def createGui(self, parent):
+        pane = AppearancePane( self, parent, wx.BORDER_NONE )        
+        sizer = parent.GetSizer()
+        sizer.Add( pane, 1, wx.ALL|wx.EXPAND )
+        sizer.Layout()        
+        self.gui = pane
         
 #==============================================================================
 
@@ -67,6 +125,8 @@ class shaderReader(xml.sax.handler.ContentHandler):
             self.startParameter(attrs)
         if name=="group":
             self.startGroup(attrs)
+        if name=="separator":
+            self.startSeparator(attrs)
         self.mode.append( name )
     def endElement(self,name):   
         if name=="shader":
@@ -75,6 +135,8 @@ class shaderReader(xml.sax.handler.ContentHandler):
             self.endParameter()
         if name=="group":
             self.endGroup() 
+        if name=="separator":
+            self.endSeparator()
         self.mode = self.mode[:-1]
 
    # element contents
@@ -92,10 +154,14 @@ class shaderReader(xml.sax.handler.ContentHandler):
         param = ShaderParameter()
         for name in attrs.getNames():
             param.setAttribute(name, attrs.getValue(name))
-        self.parent.addParameter(param)
+        self.curr_parameter = param
     def endParameter(self):
-        pass
+        self.parent.addParameter(self.curr_parameter)
     def startGroup(self,attrs):
         pass
     def endGroup(self):
+        pass
+    def startSeparator(self,attrs):
+        self.parent.addSeparator()
+    def endSeparator(self):
         pass

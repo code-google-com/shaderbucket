@@ -32,7 +32,7 @@
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required" />
         <xsd:attribute name="file" type="xsd:string" use="required" />
-        <xsd:attribute name="icon" type="xsd:string" use="optional" />
+        <xsd:attribute name="preview" type="xsd:string" use="optional" />
     </xsd:complexType>
     
     <!-- Parameter type -->

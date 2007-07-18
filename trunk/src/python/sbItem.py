@@ -12,6 +12,10 @@ class Item:
             return self.attributes[attr]
         else:
             return "Unknown"
+    def hasAttribute(self,attr):
+        if self.attributes.has_key(attr):
+            return True
+        return False
     def setAttribute(self,attr,value):
         self.attributes[attr] = value
     def dump(self):    
