@@ -35,7 +35,7 @@ class PaletteTree(wx.TreeCtrl):
         for item in palette.contents:
             if isinstance(item,Palette):
                 self.addPalette(node, item)
-            if isinstance(item,Appearance):
+            if isinstance(item,Shader):
                 self.addAppearance(node, item)
                 
     def addAppearance(self, parent, appearance):

@@ -24,7 +24,7 @@
         </shader>
         
         <!-- black shader -->
-        <shader name="Black Shader" file="../shaders/simple.sdl" icon="simple.png">
+        <shader name="Black Shader" file="../shaders/simple.sdl" preview="simple.png">
             <note>And again with a note :)</note>
             <parameter name="baseColour">0,0,0</parameter>
 			<parameter name="useTextures">0</parameter>

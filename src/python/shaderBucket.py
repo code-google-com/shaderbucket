@@ -52,4 +52,4 @@ if __name__ == '__main__':
     gui.MainLoop()    
     
     # test write of our new palette
-    #sb.root.contents[0].save("outfile.xml")
+    sb.root.contents[0].save("outfile.xml")

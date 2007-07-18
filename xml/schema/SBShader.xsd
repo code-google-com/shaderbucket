@@ -16,7 +16,7 @@
 	        <xsd:choice minOccurs="0" maxOccurs="unbounded">
 	            <xsd:element name="parameter" type="Parameter" />
                 <xsd:element name="group" type="Shader" />
-                <xsd:element name="sep" type="Separator" />
+                <xsd:element name="seperator" type="Separator" />
             </xsd:choice>
 		</xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required"/>

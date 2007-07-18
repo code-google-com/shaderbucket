@@ -7,6 +7,9 @@
 		
 	<!-- example colour parameter -->
 	<parameter name="baseColour" type="colour" help="Base colour." default="0.18,0.18,0.18" />
+	
+	<!-- example float param -->
+	<parameter name="basicFloat" type="float" help="Floating point value." default="0.5" />
 		
 	<!-- a group of shader parameters -->
 	<group name="Texturing" expand="false">
@@ -15,7 +18,7 @@
 		<parameter name="useTextures" label="Enable" type="bool" help="Turns texturing on/off." default="true" />
 			
 		<!-- a seperator -->
-		<sep />
+		<seperator />
 			
 		<!-- a file string -->
 		<parameter name="textureFile" label="Texture File" type="file" help="Filename for the base texture." default="" />
