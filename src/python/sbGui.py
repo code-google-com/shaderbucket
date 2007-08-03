@@ -91,31 +91,38 @@ class MainFrame(wx.Frame):
         
         # main panel
         main_panel = wx.Panel(self)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_panel.SetSizer(main_sizer)
         
-        # top label
-        #text = wx.StaticText(main_panel, -1, "ShaderBucket")
-        #text.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
-        #text.SetSize(text.GetBestSize())
+        # top/bottom splitter
+        main_splitter = wx.SplitterWindow(main_panel, -1, style=wx.SP_LIVE_UPDATE)
+        main_splitter.SetSashSize(6)        
         
-        # splitter
-        splitter = wx.SplitterWindow(main_panel, -1, style=wx.SP_LIVE_UPDATE)
-        splitter.SetSashSize(6)
+        # appearance left/right splitter
+        appearance_splitter = wx.SplitterWindow(main_splitter, -1, style=wx.SP_LIVE_UPDATE)
+        appearance_splitter.SetSashSize(6)
+        appearance_splitter.SetMinimumPaneSize(20)
 
-        self.tree = PaletteTree( splitter, wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS )
-        self.appearance = wx.Panel( splitter, -1, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_SUNKEN )
+        self.tree = PaletteTree( appearance_splitter, wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS )
+        self.appearance = wx.Panel( appearance_splitter, -1, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_SUNKEN )
         
         app_sizer = wx.BoxSizer( wx.VERTICAL )
         self.appearance.SetSizer( app_sizer )        
         
-        splitter.SetMinimumPaneSize(20)
-        splitter.SplitVertically(self.tree, self.appearance, 240)
+        appearance_splitter.SplitVertically(self.tree, self.appearance, 240)
         self.tree.appearance_window = self.appearance
         
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        #sizer.Add(text, 0, wx.ALL, 5)
-        sizer.Add(splitter, 1, wx.ALL|wx.EXPAND, 5)
-        main_panel.SetSizer(sizer)
+        # bucket pane
+        self.bucket_pane = wx.Panel( main_splitter, -1 )
+        self.bucket_pane.SetBackgroundColour( "yellow" )
         
+        # main splitter
+        main_splitter.SplitHorizontally( appearance_splitter, self.bucket_pane )
+        
+        # add stuff to main panel
+        main_sizer.Add(main_splitter, 1, wx.ALL|wx.EXPAND, 5)        
+        
+        # setup events
         self.Bind(wx.EVT_CLOSE, self.CloseWindow)
         
         
