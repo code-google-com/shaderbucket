@@ -1,0 +1,22 @@
+#summary Description of the ShaderBucket configuration file format.
+
+The configuration file is used to setup certain aspects of ShaderBucket.
+
+=Settings=
+==RmanRenderer=
+This setting is used to specify the command used to trigger renderman renders. 
+{{{
+<setting name="renderer">renderdl</setting>
+}}}
+
+==RmanPreviewRib==
+{{{
+<setting name="previewrib">share/rib/preview.rib</setting>
+}}}
+
+= Example File =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
