@@ -1,5 +1,3 @@
-#summary Main page for the ShaderBucket wiki.
-
 = ShaderBucket =
 
 ShaderBucket is a palette and appearance manager for renderman shaders.
@@ -26,4 +24,3 @@ ShaderBucket uses xml files to describe shaders, palettes and even it's own conf
 * [ShaderDescriptionFormat Shader Description]
 
 * [PaletteDescriptionFormat Palette Description]
-
