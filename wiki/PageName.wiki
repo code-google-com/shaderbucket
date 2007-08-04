@@ -1,0 +1,28 @@
+#summary One-sentence summary of this page.
+
+= ShaderBucket =
+
+ShaderBucket is a palette and appearance manager for renderman shaders.
+
+= Concepts =
+
+==Shader==
+A *shader* is a description of a renderman shader including it's parameters.
+==Appearance==
+An *appearance* is an instance of a renderman shader. Several appearances with different parameters can be created from a common shader.
+==Look==
+A *look* is the combination of one or more appearances
+==Assignment==
+An *assignment* is the relationship between a *look* and the objects to which it's applied.
+==Palette==
+A *palette* is a collection of appearances, looks and assignments. A *palette* can also contain other palettes.
+
+= File Specifications =
+
+ShaderBucket uses xml files to describe shaders, palettes and even it's own configuration.
+
+* [ConfigurationFileFormat ShaderBucket Configuration]
+* [ShaderDescriptionFormat Shader Description]
+* [PaletteDescriptionFormat Palette Description]
+
+
