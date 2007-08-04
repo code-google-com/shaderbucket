@@ -15,11 +15,6 @@ An *assignment* is the relationship between a *look* and the objects to which it
 A *palette* is a collection of appearances, looks and assignments. A *palette* can also contain other palettes.
 
 = File Specifications =
-
-ShaderBucket uses xml files to describe shaders, palettes and even it's own configuration.
-
-* [ConfigurationFileFormat ShaderBucket Configuration]
-
-* [ShaderDescriptionFormat Shader Description]
-
-* [PaletteDescriptionFormat Palette Description]
+  * [ConfigurationFileFormat ShaderBucket Configuration]
+  * [ShaderDescriptionFormat Shader Description]
+  * [PaletteDescriptionFormat Palette Description]
