@@ -3,13 +3,13 @@
 The configuration file is used to setup certain aspects of ShaderBucket.
 
 =Settings=
-==RmanRenderer=
+==renderer=
 This setting is used to specify the command used to trigger renderman renders. 
 {{{
 <setting name="renderer">renderdl</setting>
 }}}
 
-==RmanPreviewRib==
+==previewrib==
 {{{
 <setting name="previewrib">share/rib/preview.rib</setting>
 }}}
