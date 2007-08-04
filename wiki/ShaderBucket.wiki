@@ -18,3 +18,9 @@ A *palette* is a collection of appearances, looks and assignments. A *palette* c
   * [ConfigurationFileFormat ShaderBucket Configuration]
   * [ShaderDescriptionFormat Shader Description]
   * [PaletteDescriptionFormat Palette Description]
+
+= Environment Variables =
+ShaderBucket can use certain environment variables for further configuration.
+  * _$SHADERBUCKET_PALETTE_PATH_
+  * _$SHADERBUCKET_SHADER_PATH_
+  * _$SHADERBUCKET_CONFIG_FILE_
