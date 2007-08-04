@@ -1,4 +1,4 @@
-#summary Description of the ShaderBucket configuration file format.
+#summary Description of the ShaderBucket XML configuration file format.
 
 The configuration file is used to setup certain aspects of ShaderBucket.
 
