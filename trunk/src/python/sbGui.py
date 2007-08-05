@@ -3,6 +3,7 @@
 
 import sys, os
 import wx
+import wx.xrc
 from wx.lib.evtmgr import eventManager
 from sbPalette import Palette, Appearance
 from sbShader import Shader
@@ -60,7 +61,10 @@ class PaletteTree(wx.TreeCtrl):
 
     def rebuild(self):
         self.clear()
-        self.addPalette(None, wx.GetTopLevelParent(self).bucket.root)
+        if self.bucket:
+            self.addPalette(None, self.bucket.root)
+        else:
+            print "Error: tree could not find it's shaderbucket!"
             
     def changeLabel(self,evt):
         data = self.GetItemPyData(evt.GetItem())
@@ -77,90 +81,33 @@ class PaletteTree(wx.TreeCtrl):
                 self.showAppearance( data )
                 self.last_appearance = data        
 
-#==============================================================================
+class PaletteTreeXmlHandler(wx.xrc.XmlResourceHandler):
+    def __init__(self):
+        wx.xrc.XmlResourceHandler.__init__(self)
+        # Specify the styles recognized by objects of this type
+        self.AddStyle("wxNO_3D", wx.NO_3D)
+        self.AddStyle("wxTAB_TRAVERSAL", wx.TAB_TRAVERSAL)
+        self.AddStyle("wxWS_EX_VALIDATE_RECURSIVELY", wx.WS_EX_VALIDATE_RECURSIVELY)
+        self.AddStyle("wxCLIP_CHILDREN", wx.CLIP_CHILDREN)
+        self.AddWindowStyles()
 
-# Class for our custom main window thingy
-class MainFrame(wx.Frame):
-    def __init__( self, parent, title ):
-        wx.Frame.__init__( self, parent, -1, title, pos=(800,100), size=(640,480) )
-        self.bucket = None
-        
-        # main bits & bobs
-        #self.CreateMenuBar()
-        self.status_bar = self.CreateStatusBar()
-        
-        # main panel
-        main_panel = wx.Panel(self)
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_panel.SetSizer(main_sizer)
-        
-        # top/bottom splitter
-        main_splitter = wx.SplitterWindow(main_panel, -1, style=wx.SP_LIVE_UPDATE)
-        main_splitter.SetSashSize(6)        
-        
-        # appearance left/right splitter
-        appearance_splitter = wx.SplitterWindow(main_splitter, -1, style=wx.SP_LIVE_UPDATE)
-        appearance_splitter.SetSashSize(6)
-        appearance_splitter.SetMinimumPaneSize(20)
+    def CanHandle(self, node):
+        return self.IsOfClass(node, "PaletteTree")
 
-        self.tree = PaletteTree( appearance_splitter, wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS )
-        self.appearance = wx.Panel( appearance_splitter, -1, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_SUNKEN )
+    def DoCreateResource(self):
+        assert self.GetInstance() is None
         
-        app_sizer = wx.BoxSizer( wx.VERTICAL )
-        self.appearance.SetSizer( app_sizer )        
-        
-        appearance_splitter.SplitVertically(self.tree, self.appearance, 240)
-        self.tree.appearance_window = self.appearance
-        
-        # bucket pane
-        self.bucket_pane = wx.Panel( main_splitter, -1 )
-        self.bucket_pane.SetBackgroundColour( "yellow" )
-        
-        # main splitter
-        main_splitter.SplitHorizontally( appearance_splitter, self.bucket_pane )
-        
-        # add stuff to main panel
-        main_sizer.Add(main_splitter, 1, wx.ALL|wx.EXPAND, 5)        
-        
-        # setup events
-        self.Bind(wx.EVT_CLOSE, self.CloseWindow)
-        
-        
-    # OnClose
-    def CloseWindow(self, evt):
-        """Event handler for the close event."""
-        self.Destroy()
-    
-    # add our menu bars
-    def CreateMenuBar( self ):
-        # Create the menubar
-        menuBar = wx.MenuBar()
-        
-        # add some stuff to it        
-        '''menu1 = wx.Menu()
-        menu1.Append(101, "&Mercury", "This the text in the Statusbar")
-        menu1.Append(102, "&Venus", "")
-        menu1.Append(103, "&Earth", "You may select Earth too")
-        menu1.AppendSeparator()
-        menu1.Append(104, "&Close", "Close this frame")
-        menuBar.Append(menu1, "&Planets")
-        '''
-        menu2 = wx.Menu()
-        menu2.Append(201, "&Help", "Some help innit")
-        menuBar.Append(menu2, "&Help")
-        
-        self.Bind(wx.EVT_MENU, self.CloseWindow, id=104)
-        
-        # add to menu bar
-        self.SetMenuBar(menuBar)
-    
-    def setBucket(self, bucket):
-        self.bucket = bucket
-        self.refresh()
-        
-    def refresh(self):
-        self.tree.rebuild()
+        tree = PaletteTree(self.GetParentAsWindow(),
+                             # self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS) )
+                             self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_EDIT_LABELS) )
+        self.SetupWindow(tree)
+        self.CreateChildren(tree)
 
+        # setup some stuff
+        tree.SetName( self.GetName() ) # set out name
+        tree.bucket = None # the shaderbucket this represents
+
+        return tree
 
 #==============================================================================
 
@@ -172,16 +119,42 @@ class App(wx.App):
         if bucket:
             shader_bucket = bucket
         wx.App.__init__(self, redirect=redirect )
+        
+    # recursively add gui components to a global contents dictionary
+    def StoreChildrenByName(self, root, contents):
+        for child in root.GetChildren():
+            contents[child.GetName()] = child
+            self.StoreChildrenByName( child, contents )
 
+    # load the xrc and create the main_frame
     def OnInit(self, bucket=None):
-        self.win = MainFrame(None,"ShaderBucket")
+        self.xrc = wx.xrc.XmlResource( "src/xrc/shaderbucket.xrc" )
+        self.xrc.AddHandler(PaletteTreeXmlHandler())
+        self.win = self.xrc.LoadFrame( None, "main_frame" )
+        self.contents = {}
+        self.StoreChildrenByName( self.win, self.contents )
+        
+        print ""
+        for name in self.contents.iterkeys():
+            print name
+        print ""
+
         if self.bucket:
-            self.win.setBucket( self.bucket )
+            self.contents['palette_tree'].bucket = self.bucket
+            self.contents['palette_tree'].appearance_window = self.contents['appearance_panel']
+            self.contents['palette_tree'].rebuild()
+            self.contents['palette_tree'].ExpandAll()            
             self.bucket.gui = self.win
-        self.SetTopWindow(self.win)
+
+        # setup some gui components
+        self.contents['leftright_split'].SetSashSize(6)
+        self.contents['leftright_split'].SetMinimumPaneSize(200)
+    
+        self.SetTopWindow(self.win)        
         self.win.Show(True)
+        self.win.SetSize( (640,480) )
+
         return True
     
     def refresh(self):
         self.win.refresh()
-
