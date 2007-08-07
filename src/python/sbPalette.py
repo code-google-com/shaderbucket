@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys, copy, os.path
+import sys, copy, os, os.path
 import xml.sax, xml.sax.handler, xml.sax.saxutils, xml.sax.xmlreader
 import wx
 from sbItem import Item
@@ -18,8 +18,11 @@ class Palette(Item):
         self.note = ""
         self.contents = []
         self.gui = None
-        self.filename = os.path.abspath(filename)
+        self.filename = None
+        self.valid = True
+        self.cwd = os.getcwd() # why does this not always work!!!??!?!!
         if filename!="":
+            self.filename = os.path.abspath(filename)
             self.load(filename)
             
     # dump information to stdout
@@ -34,32 +37,45 @@ class Palette(Item):
         # appearance shader file
         filename = appearance.getAttribute( 'file' )
         
-        # get shader file relative to this palette
-        (root,ext) = os.path.splitext(filename)
-        shader_file = os.path.abspath( os.path.join( os.path.dirname( self.filename ), root ) )
+        # get a shader description for our shader
+        print "==="
+        print "palette: " + self.getAttribute('name')
+        print "dir: " + self.cwd
+        print "==="
+        
+        xml_file = Shader().getFilename( filename, cwd=self.cwd ) # this function returns the shader description file for the sdl in question
+        if not xml_file:
+            print "Error: Could not find shader description for shader %s!" % filename
         
         # load the shader if we haven't already
-        if not self.bucket.shaders.has_key( shader_file ):
-            self.bucket.shaders[shader_file] = Shader( shader_file )
-        shader = self.bucket.shaders[shader_file]
+        if not self.bucket.shaders.has_key( xml_file ):
+            self.bucket.shaders[xml_file] = Shader( xml_file )
+        shader = self.bucket.shaders[xml_file]
+        shader.setAttribute( 'xml', xml_file )
         
         # add an instance of our shader to our palette
         if shader:
+                
+            # firstly copy the default shader description
             self.contents.append(copy.deepcopy(shader))
             instance = self.contents[-1]
             instance.initParametersFromDefault()
+                        
+            # then override each of the attributes & parameters for our appearance
+            instance.note = appearance.note
             for (name, value) in appearance.attributes.iteritems():
                 instance.setAttribute(name, value)
             for p in appearance.parameters:
                 instance.setValue(p.getAttribute('name'), p.value)
-            instance.note = appearance.note
         
     # add a palette as a child
     def addPalette(self, palette):
+        palette.cwd = self.cwd # child inherits our cwd
         self.contents.append(copy.deepcopy(palette))
         
     # load a palette into this instance
     def load(self, filename):
+        self.cwd = os.path.dirname( filename )
         parser = xml.sax.make_parser()
         parser.setContentHandler( paletteReader(self) )
         parser.parse( filename )
@@ -102,9 +118,9 @@ class paletteReader(xml.sax.handler.ContentHandler):
 
     # start/end document
     def startDocument(self):
-        pass        
+        self.parent.valid = False
     def endDocument(self):
-        pass       
+        self.parent.valid = True
 
     # start/end element
     def startElement(self, name, attrs):
@@ -141,7 +157,8 @@ class paletteReader(xml.sax.handler.ContentHandler):
     def startPalette(self, attrs):
         if self.done_top_level:
             self.curr_palette = Palette(self.bucket) # create a new palette
-            self.curr_palette.filename = self.parent.filename
+            self.curr_palette.filename = self.parent.filename # inherit filename & cwd
+            self.curr_palette.cwd = self.parent.cwd
             
         for name in attrs.getNames():
             self.curr_palette.setAttribute(name, attrs.getValue(name))

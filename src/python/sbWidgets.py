@@ -56,7 +56,7 @@ class FloatCtrl(Ctrl):
         self.parameter.setValue(self.ctrl.GetValue())
         event.Skip()
         return
-
+        
 class StringCtrl(Ctrl):
     def __init__(self, parent, parameter):
         Ctrl.__init__(self, parent, parameter)
@@ -122,17 +122,22 @@ class AppearancePane(wx.ScrolledWindow):
 
         preview_img =  wx.BitmapButton( top_info, -1, style = wx.SIMPLE_BORDER, size=(64,64) )      
         top_info_sizer = wx.BoxSizer( wx.VERTICAL )
-
+        
+        name = wx.StaticText( top_info, -1, label="name: %s"%appearance.getAttribute('name') )
+        top_info_sizer.Add( name, 0, wx.ALL, 5 )   
+        xml = wx.StaticText( top_info, -1, label="xml: %s"%appearance.getAttribute('xml') )
+        top_info_sizer.Add( xml, 0, wx.ALL, 5 )      
+        
         top_sizer.Add( preview_img, 0, wx.ALL, 5 )
         top_sizer.Add( top_info_sizer, 0, wx.ALL|wx.EXPAND, 5 )
         top_info.SetSizer( top_sizer )
-        sizer.Add( top_info, 0, wx.ALL|wx.EXPAND, 0 )
         
+        sizer.Add( top_info, 0, wx.ALL|wx.EXPAND, 0 )
+
         for param in appearance.contents:
             widget = self.addParameter( param )
             if widget:
                 sizer.Add( widget, 0, wx.ALL, 5 )
-        
     
     def addParameter(self, parameter):
         result = None
