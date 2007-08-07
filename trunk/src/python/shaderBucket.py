@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys, os
+import sys, os, thread
 from sbGui import App
 from sbPalette import Palette
 from sbShader import Shader
@@ -16,6 +16,7 @@ class ShaderBucket:
         self.shaders = {}
         self.root = Palette(self)
         self.root.setAttribute('name', "ShaderBucket")
+        self.mutex = thread.allocate_lock()
         self.gui = None
         self.print_debug = False
     # print a load of debug information
@@ -48,8 +49,8 @@ if __name__ == '__main__':
         sb.root.addPalette( Palette(sb, arg ) )
     
     # do some gui stuff
-    gui = App(bucket = sb, redirect=False)
+    gui = App(bucket=sb, redirect=False)
     gui.MainLoop()    
     
     # test write of our new palette
-    sb.root.contents[0].save("outfile.xml")
+    #sb.root.contents[0].save("outfile.xml")
