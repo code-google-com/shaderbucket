@@ -49,6 +49,47 @@ class Shader(Item):
         print "==shader=="
         for item in self.contents:
             item.dump()  
+            
+    # static function for finding shader descriptions for specified shader file
+    def getFilename( self, filename, cwd=None ):
+        (root,ext) = os.path.splitext(filename)
+        xml_file = root+".xml"
+        result = None
+        
+        # first try absolute
+        if os.path.exists( xml_file ):
+            result = xml_file
+        
+        # have we been supplied with a current directory by the calling palette
+        if cwd and not result: 
+            path = os.path.abspath(os.path.join( cwd, xml_file ))
+            if os.path.exists( path ):
+                result = path
+                
+        # next loop through the SHADERBUCKET_SHADER_PATH envvar
+        shaderpath = os.getenv( "SHADERBUCKET_SHADER_PATH", None)
+        if shaderpath:
+            tokens = shaderpath.split(":")
+            for tok in tokens:
+                path = os.path.abspath(os.path.join( tok, xml_file ))
+                if os.path.exists( path ):
+                    result = path
+                    break
+                
+        # finally try os.path.cwd()
+        if not result:
+            path = os.path.abspath(os.path.join( os.getcwd(), xml_file )) 
+            if os.path.exists( path ):
+                result = path
+                
+        # if no luck try again with a shortened filename
+        if not result:
+            shortname = os.path.basename( xml_file )
+            if shortname!=xml_file: 
+                result = self.getFilename( shortname, cwd )        
+                
+        # return what we found                
+        return result
     
     # set all parameters to their defaults            
     def initParametersFromDefault(self):
@@ -69,11 +110,12 @@ class Shader(Item):
         
     # load a shader interface file
     def load(self,filename):
-        interfacefile = filename+".xml"
-        if os.path.exists(interfacefile):
+        if os.path.exists(filename):
             parser = xml.sax.make_parser()
             parser.setContentHandler( shaderReader(self) )
-            parser.parse( interfacefile )
+            parser.parse( filename )
+        else:
+            print "Error: could not read %s!" % filename
 
     # set a parameter value
     def setValue( self, name, value ):
