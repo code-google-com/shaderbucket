@@ -98,8 +98,8 @@ class PaletteTreeXmlHandler(wx.xrc.XmlResourceHandler):
         assert self.GetInstance() is None
         
         tree = PaletteTree(self.GetParentAsWindow(),
-                             # self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS) )
-                             self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_EDIT_LABELS) )
+                            # self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS) )
+                             self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT) )
         self.SetupWindow(tree)
         self.CreateChildren(tree)
 
@@ -125,12 +125,55 @@ class App(wx.App):
         for child in root.GetChildren():
             contents[child.GetName()] = child
             self.StoreChildrenByName( child, contents )
+                
+    def exportAsHscript( self, event ):
+        dlg = wx.FileDialog( self.win, message="Export Palette as HScript...", defaultDir=os.getcwd(), defaultFile="", wildcard="*.hscript", style=wx.SAVE )
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            print "Save palette as %s" % path     
+        dlg.Destroy()
+        
+    def saveAs( self, event ):
+        dlg = wx.FileDialog( self.win, message="Save As...", defaultDir=os.getcwd(), defaultFile="", wildcard="*.xml", style=wx.SAVE )
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            print "Save palette as %s" % path
+            self.root.save(path)
+        dlg.Destroy()   
+    
+    def destroy( self, event ):
+        print "go bye bye"
+        self.win.Destroy()
 
     # load the xrc and create the main_frame
     def OnInit(self, bucket=None):
-        self.xrc = wx.xrc.XmlResource( "src/xrc/shaderbucket.xrc" )
+        self.xrc = wx.xrc.EmptyXmlResource()
+        self.xrc.InitAllHandlers()
+        if not self.xrc.Load( "src/xrc/shaderbucket.xrc" ):
+            print "ERROR: Could not load ShaderBucket XRC gui file!"
+            return False
+            
         self.xrc.AddHandler(PaletteTreeXmlHandler())
         self.win = self.xrc.LoadFrame( None, "main_frame" )
+ 
+        # store menus
+        self.menu = self.win.GetMenuBar()
+        self.menus = {}
+        for pos in range(self.menu.GetMenuCount()):
+            menu = self.menu.GetMenu(pos) # the menu
+            name = self.menu.GetLabelTop(pos)
+            self.menus[name] = [] # storage for menu items
+            for item in menu.GetMenuItems():
+                self.menus[name].append(item)
+
+        if not self.win:
+            print "ERROR: Could not load frame from XRC!"
+            return False
+        print "menu: %d" % wx.xrc.XmlResource.GetXRCID( "main_menubar" )
+        #if not self.menu:
+        #    print "ERROR: Could not load menu from XRC!"
+        #    return False
+            
         self.contents = {}
         self.StoreChildrenByName( self.win, self.contents )
         
@@ -143,15 +186,21 @@ class App(wx.App):
             self.contents['palette_tree'].bucket = self.bucket
             self.contents['palette_tree'].appearance_window = self.contents['appearance_panel']
             self.contents['palette_tree'].rebuild()
-            self.contents['palette_tree'].ExpandAll()            
+            #self.contents['palette_tree'].ExpandAll()            
             self.bucket.gui = self.win
 
         # setup some gui components
         self.contents['leftright_split'].SetSashSize(6)
         self.contents['leftright_split'].SetMinimumPaneSize(200)
+
+        # add some events
+        self.Bind( wx.EVT_MENU, self.saveAs, id=self.menus['File'][0].GetId() )
+        self.Bind( wx.EVT_MENU, self.exportAsHscript, id=self.menus['File'][2].GetId() )
+        self.win.Bind( wx.EVT_CLOSE, self.destroy )
     
         self.SetTopWindow(self.win)        
-        self.win.Show(True)
+        self.win.Show(True)       
+        self.contents['leftright_split'].UpdateSize() 
         self.win.SetSize( (640,480) )
 
         return True
