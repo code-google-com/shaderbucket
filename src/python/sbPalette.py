@@ -172,6 +172,12 @@ class paletteReader(xml.sax.handler.ContentHandler):
             self.curr_parameter.setAttribute(name, attrs.getValue(name))
     def endParameter(self):
         self.curr_appearance.addParameter( self.curr_parameter )
+        
+        # sometimes we have a string/file parameter with a null value - set as an empty string
+        if self.curr_parameter.getAttribute('type')=='string' or self.curr_parameter.getAttribute('type')=='file':
+            if self.curr_parameter.value==None:
+                self.curr_parameter.value=""
+        
         self.curr_parameter = None
 
 #==============================================================================

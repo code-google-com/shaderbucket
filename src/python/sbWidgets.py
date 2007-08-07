@@ -57,13 +57,63 @@ class FloatCtrl(Ctrl):
         event.Skip()
         return
 
+class StringCtrl(Ctrl):
+    def __init__(self, parent, parameter):
+        Ctrl.__init__(self, parent, parameter)
+        self.ctrl = wx.TextCtrl(self, -1 )    
+        if not parameter.value: # occasionally we might have a None value
+            parameter.value = ""
+        self.ctrl.SetValue( parameter.value )
+        self.ctrl.Bind( wx.EVT_TEXT, self.update )
+        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+    def update(self, event):
+        self.parameter.setValue(self.ctrl.GetValue())
+        event.Skip()
+        return
+
+class BoolCtrl(Ctrl):
+    def __init__(self, parent, parameter):
+        Ctrl.__init__(self, parent, parameter)
+        self.ctrl = wx.CheckBox(self, -1 )        
+        self.ctrl.SetValue( bool(parameter.value) )
+        self.ctrl.Bind( wx.EVT_CHECKBOX, self.update )
+        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+    def update(self, event):
+        self.parameter.setValue(str(self.ctrl.GetValue()))
+        event.Skip()
+        return
+
+class ColourCtrl(Ctrl):
+    def __init__(self, parent, parameter):
+        Ctrl.__init__(self, parent, parameter)
+        self.ctrl = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update) )        
+        self.ctrl.SetValue( parameter.value )
+        self.ctrl.Bind( wx.EVT_TEXT, self.update )
+        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+    def update(self, event):
+        self.parameter.setValue(self.ctrl.GetValue())
+        event.Skip()
+        return
+        
+class PointCtrl(Ctrl):
+    def __init__(self, parent, parameter):
+        Ctrl.__init__(self, parent, parameter)
+        self.ctrl = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update) )        
+        self.ctrl.SetValue( parameter.value )
+        self.ctrl.Bind( wx.EVT_TEXT, self.update )
+        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+    def update(self, event):
+        self.parameter.setValue(self.ctrl.GetValue())
+        event.Skip()
+        return
+
 #==============================================================================
 
 # Class for our custom appearance pane
-class AppearancePane(wx.Panel):
+class AppearancePane(wx.ScrolledWindow):
     def __init__(self, appearance, parent, style):
-        wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize, style)
-        
+        wx.ScrolledWindow.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize, style)
+        self.SetScrollRate(10, 10)
         sizer = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( sizer )
 
@@ -77,19 +127,28 @@ class AppearancePane(wx.Panel):
         top_sizer.Add( top_info_sizer, 0, wx.ALL|wx.EXPAND, 5 )
         top_info.SetSizer( top_sizer )
         sizer.Add( top_info, 0, wx.ALL|wx.EXPAND, 0 )
-
+        
         for param in appearance.contents:
             widget = self.addParameter( param )
             if widget:
                 sizer.Add( widget, 0, wx.ALL, 5 )
+        
     
     def addParameter(self, parameter):
         result = None
         param_type = parameter.getAttribute('type')
         
         if param_type=='colour':
-            pass
+            result = ColourCtrl( self, parameter )
         elif param_type=='float':
             result = FloatCtrl( self, parameter )
+        elif param_type=='file':
+            result = StringCtrl( self, parameter )
+        elif param_type=='string':
+            result = StringCtrl( self, parameter )
+        elif param_type=='bool':
+            result = BoolCtrl( self, parameter )
+        elif param_type=='point':
+            result = PointCtrl( self, parameter )
         return result
         
