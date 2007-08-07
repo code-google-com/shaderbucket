@@ -7,17 +7,6 @@
 		
 	<!-- example colour parameter -->
 	<parameter name="baseColour" type="colour" help="Base colour." default="0.18,0.18,0.18" />
-	
-	<!-- example float param -->
-	<parameter name="basicFloat" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat1" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat2" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat3" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat4" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat5" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat6" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat7" type="float" help="Floating point value." default="0.5" />
-	<parameter name="basicFloat8" type="float" help="Floating point value." default="0.5" />
 		
 	<!-- a group of shader parameters -->
 	<group name="Texturing" expand="false">
@@ -33,6 +22,14 @@
 			
 	</group>
 	<!-- end group -->
+	
+	<!-- example float param -->
+	<parameter name="basicFloat" type="float" help="basic float" default="123.456" />
+	<parameter name="basicString" type="string" help="basic string" default="some string here" />
+	<parameter name="basicBool" type="bool" help="basic bool" default="1" />
+	<parameter name="basicFile" type="file" help="basic file" default="" />
+	<parameter name="basicColour" type="colour" help="basic colour" default="0,1,0" />
+	<parameter name="basicPoint" type="point" help="basic point" default="1,2,3" />
 		
 </shader>
 <!-- end shader -->
