@@ -5,6 +5,7 @@ import sys, os, thread
 from sbGui import App
 from sbPalette import Palette
 from sbShader import Shader
+from sbItem import Item
         
 #==============================================================================
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     
     # do some gui stuff
     gui = App(bucket=sb, redirect=False)
-    gui.MainLoop()    
+    gui.MainLoop()
     
     # test write of our new palette
     #sb.root.contents[0].save("outfile.xml")

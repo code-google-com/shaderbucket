@@ -20,7 +20,7 @@ class Palette(Item):
         self.gui = None
         self.filename = None
         self.valid = True
-        self.cwd = os.getcwd() # why does this not always work!!!??!?!!
+        self.cwd = os.getcwd()
         if filename!="":
             self.filename = os.path.abspath(filename)
             self.load(filename)
@@ -71,7 +71,7 @@ class Palette(Item):
     # add a palette as a child
     def addPalette(self, palette):
         palette.cwd = self.cwd # child inherits our cwd
-        self.contents.append(copy.deepcopy(palette))
+        self.contents.append(copy.copy(palette))
         
     # load a palette into this instance
     def load(self, filename):
