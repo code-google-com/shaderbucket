@@ -5,6 +5,8 @@ import wx
 import string
 import os.path
 from wx.lib.evtmgr import eventManager
+import wx.lib.colourselect as csel
+import colorsys
         
 class CtrlValidator(wx.PyValidator):
     def __init__(self, flag, update_func=None):
@@ -116,25 +118,40 @@ class BoolCtrl(Ctrl):
 class ColourCtrl(Ctrl):
     def __init__(self, parent, parameter):
         Ctrl.__init__(self, parent, parameter)
-        self.ctrl = {}
-        self.ctrl[0] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )        
-        self.ctrl[1] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )        
-        self.ctrl[2] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )           
-        self.ctrl[0].Bind( wx.EVT_TEXT, self.update )           
-        self.ctrl[1].Bind( wx.EVT_TEXT, self.update )           
-        self.ctrl[2].Bind( wx.EVT_TEXT, self.update )        
+        self.hue = 0
+        self.sat = 0
+        
+        # value        
+        col = [0,0,0]
         toks = parameter.value.split(',')
         for i in range(len(toks)):
-            self.ctrl[i].SetValue( toks[i] )          
-        self.sizer.Add(self.ctrl[0], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
-        self.sizer.Add((10, 20), 0, wx.ADJUST_MINSIZE, 0)
-        self.sizer.Add(self.ctrl[1], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
-        self.sizer.Add((10, 20), 0, wx.ADJUST_MINSIZE, 0)
-        self.sizer.Add(self.ctrl[2], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
-        self.sizer.Add((20, 20), 0, wx.ADJUST_MINSIZE, 0)
-    def update(self, event):
-        value = "%s,%s,%s"%(self.ctrl[0].GetValue(), self.ctrl[1].GetValue(), self.ctrl[2].GetValue())
-        self.parameter.setValue(value)
+            col[i] = float(toks[i])
+        self.ctrl = csel.ColourSelect(self, -1, "", wx.Colour(col[0], col[1], col[2]), size=(80,25))
+        self.ctrl.Bind( csel.EVT_COLOURSELECT, self.updateColour )
+        
+        # slider        
+        self.slider = wx.Slider(self, -1, 0, 0, 100, style=wx.SL_HORIZONTAL) 
+        self.slider.Bind( wx.EVT_SCROLL, self.updateSlider )       
+        
+        self.sizer.Add( self.ctrl, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE|wx.ALIGN_RIGHT, 0 )
+        self.sizer.Add( (10,20), 0, wx.ADJUST_MINSIZE, 0 )
+        self.sizer.Add( self.slider, 1, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE|wx.ALIGN_RIGHT, 0 )
+        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0 )
+    def updateColour(self, event):
+        (r,g,b) = event.GetValue().Get()
+        r/=255.0; g/=255.0; b/=255.0;
+        (h,s,v) = colorsys.rgb_to_hsv(r,g,b)
+        self.hue = h
+        self.sat = s        
+        self.slider.SetValue(v*100);
+        self.parameter.setValue("%s,%s,%s"%(r,g,b))
+        event.Skip()
+        return
+    def updateSlider(self, event):
+        value = float(self.slider.GetValue()/100.0)
+        (r,g,b) = colorsys.hsv_to_rgb(self.hue, self.sat, value)
+        self.ctrl.SetValue((r*255,g*255,b*255))
+        self.parameter.setValue("%s,%s,%s"%(r,g,b))
         event.Skip()
         return
         

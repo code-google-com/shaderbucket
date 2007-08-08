@@ -138,7 +138,7 @@ class App(wx.App):
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             print "Save palette as %s" % path
-            self.root.save(path)
+            self.bucket.root.save(path)
         dlg.Destroy()   
     
     def destroy( self, event ):
