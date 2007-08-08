@@ -3,6 +3,7 @@
 
 import wx
 import string
+import os.path
 from wx.lib.evtmgr import eventManager
         
 class CtrlValidator(wx.PyValidator):
@@ -42,18 +43,45 @@ class Ctrl(wx.Panel):
         self.parameter = parameter
         self.sizer = wx.BoxSizer( wx.HORIZONTAL )
         self.SetSizer( self.sizer )
-        self.lbl = wx.StaticText(self, -1, parameter.getAttribute('name'))
-        self.sizer.Add( self.lbl, 0, wx.ALL, 5 )
-
+        
+        # common widgets
+        self.help_btn = wx.Button(self, -1, "")
+        self.help_btn.SetMinSize((15, 15))
+        
+        self.lbl = wx.StaticText(self, -1, parameter.getAttribute('name'), size=(160,20))
+        self.lbl.SetMinSize((120, 17))
+        
+        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add( self.help_btn, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add( (10,20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add( self.lbl, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0)
+    
 class FloatCtrl(Ctrl):
     def __init__(self, parent, parameter):
         Ctrl.__init__(self, parent, parameter)
-        self.ctrl = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update) )        
+        
+        # value
+        self.ctrl = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.updateField) )        
         self.ctrl.SetValue( parameter.value )
-        self.ctrl.Bind( wx.EVT_TEXT, self.update )
-        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
-    def update(self, event):
+        self.ctrl.Bind( wx.EVT_TEXT, self.updateField )
+        
+        # slider        
+        self.slider = wx.Slider(self, -1, 0, 0, 100, style=wx.SL_HORIZONTAL) 
+        self.slider.Bind( wx.EVT_SCROLL, self.updateSlider )       
+        
+        self.sizer.Add( self.ctrl, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE|wx.ALIGN_RIGHT, 0 )
+        self.sizer.Add( (10,20), 0, wx.ADJUST_MINSIZE, 0 )
+        self.sizer.Add( self.slider, 1, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE|wx.ALIGN_RIGHT, 0 )
+        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0 )
+    def updateField(self, event):
         self.parameter.setValue(self.ctrl.GetValue())
+        event.Skip()
+        return
+    def updateSlider(self, event):
+        value = float(self.slider.GetValue()/100.0)
+        self.parameter.setValue(value)
+        self.ctrl.SetValue(str(value))
         event.Skip()
         return
         
@@ -65,7 +93,8 @@ class StringCtrl(Ctrl):
             parameter.value = ""
         self.ctrl.SetValue( parameter.value )
         self.ctrl.Bind( wx.EVT_TEXT, self.update )
-        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+        self.sizer.Add( self.ctrl, 1, wx.ALIGN_CENTER_VERTICAL, 0 )
+        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0 )
     def update(self, event):
         self.parameter.setValue(self.ctrl.GetValue())
         event.Skip()
@@ -77,7 +106,8 @@ class BoolCtrl(Ctrl):
         self.ctrl = wx.CheckBox(self, -1 )        
         self.ctrl.SetValue( bool(parameter.value) )
         self.ctrl.Bind( wx.EVT_CHECKBOX, self.update )
-        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+        self.sizer.Add( self.ctrl, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0 )
+        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0 )
     def update(self, event):
         self.parameter.setValue(str(self.ctrl.GetValue()))
         event.Skip()
@@ -86,24 +116,50 @@ class BoolCtrl(Ctrl):
 class ColourCtrl(Ctrl):
     def __init__(self, parent, parameter):
         Ctrl.__init__(self, parent, parameter)
-        self.ctrl = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update) )        
-        self.ctrl.SetValue( parameter.value )
-        self.ctrl.Bind( wx.EVT_TEXT, self.update )
-        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+        self.ctrl = {}
+        self.ctrl[0] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )        
+        self.ctrl[1] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )        
+        self.ctrl[2] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )           
+        self.ctrl[0].Bind( wx.EVT_TEXT, self.update )           
+        self.ctrl[1].Bind( wx.EVT_TEXT, self.update )           
+        self.ctrl[2].Bind( wx.EVT_TEXT, self.update )        
+        toks = parameter.value.split(',')
+        for i in range(len(toks)):
+            self.ctrl[i].SetValue( toks[i] )          
+        self.sizer.Add(self.ctrl[0], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add((10, 20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add(self.ctrl[1], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add((10, 20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add(self.ctrl[2], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add((20, 20), 0, wx.ADJUST_MINSIZE, 0)
     def update(self, event):
-        self.parameter.setValue(self.ctrl.GetValue())
+        value = "%s,%s,%s"%(self.ctrl[0].GetValue(), self.ctrl[1].GetValue(), self.ctrl[2].GetValue())
+        self.parameter.setValue(value)
         event.Skip()
         return
         
 class PointCtrl(Ctrl):
     def __init__(self, parent, parameter):
         Ctrl.__init__(self, parent, parameter)
-        self.ctrl = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update) )        
-        self.ctrl.SetValue( parameter.value )
-        self.ctrl.Bind( wx.EVT_TEXT, self.update )
-        self.sizer.Add( self.ctrl, 1, wx.ALL, 5 )
+        self.ctrl = {}
+        self.ctrl[0] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )        
+        self.ctrl[1] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )        
+        self.ctrl[2] = wx.TextCtrl(self, -1, validator=CtrlValidator('float', self.update), size=(60,25) )           
+        self.ctrl[0].Bind( wx.EVT_TEXT, self.update )           
+        self.ctrl[1].Bind( wx.EVT_TEXT, self.update )           
+        self.ctrl[2].Bind( wx.EVT_TEXT, self.update )        
+        toks = parameter.value.split(',')
+        for i in range(len(toks)):
+            self.ctrl[i].SetValue( toks[i] )          
+        self.sizer.Add(self.ctrl[0], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add((10, 20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add(self.ctrl[1], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add((10, 20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add(self.ctrl[2], 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add((20, 20), 0, wx.ADJUST_MINSIZE, 0)
     def update(self, event):
-        self.parameter.setValue(self.ctrl.GetValue())
+        value = "%s,%s,%s"%(self.ctrl[0].GetValue(), self.ctrl[1].GetValue(), self.ctrl[2].GetValue())
+        self.parameter.setValue(value)
         event.Skip()
         return
 
@@ -116,6 +172,8 @@ class AppearancePane(wx.ScrolledWindow):
         self.SetScrollRate(10, 10)
         sizer = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( sizer )
+        self.SetMinSize( (10,10) )
+        self.SetSize((10,10))        
 
         top_info = wx.Panel( self, -1, style=wx.NO_BORDER)
         top_sizer = wx.BoxSizer( wx.HORIZONTAL )
@@ -123,21 +181,19 @@ class AppearancePane(wx.ScrolledWindow):
         preview_img =  wx.BitmapButton( top_info, -1, style = wx.SIMPLE_BORDER, size=(64,64) )      
         top_info_sizer = wx.BoxSizer( wx.VERTICAL )
         
-        name = wx.StaticText( top_info, -1, label="name: %s"%appearance.getAttribute('name') )
+        name = wx.StaticText( top_info, -1, label="%s (%s)"%( appearance.getAttribute('name'), os.path.basename(appearance.getAttribute('xml'))) )
         top_info_sizer.Add( name, 0, wx.ALL, 5 )   
-        xml = wx.StaticText( top_info, -1, label="xml: %s"%appearance.getAttribute('xml') )
-        top_info_sizer.Add( xml, 0, wx.ALL, 5 )      
         
         top_sizer.Add( preview_img, 0, wx.ALL, 5 )
         top_sizer.Add( top_info_sizer, 0, wx.ALL|wx.EXPAND, 5 )
         top_info.SetSizer( top_sizer )
         
-        sizer.Add( top_info, 0, wx.ALL|wx.EXPAND, 0 )
+        sizer.Add( top_info, 0, wx.ALL, 0 )
 
         for param in appearance.contents:
             widget = self.addParameter( param )
             if widget:
-                sizer.Add( widget, 0, wx.ALL, 5 )
+                sizer.Add( widget, 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 2 )
     
     def addParameter(self, parameter):
         result = None

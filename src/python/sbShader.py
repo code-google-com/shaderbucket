@@ -56,6 +56,8 @@ class Shader(Item):
         xml_file = root+".xml"
         result = None
         
+        print "looking for %s" % xml_file
+        
         # first try absolute
         if os.path.exists( xml_file ):
             result = xml_file
@@ -71,6 +73,7 @@ class Shader(Item):
         if shaderpath:
             tokens = shaderpath.split(":")
             for tok in tokens:
+                print "path: %s"%tok
                 path = os.path.abspath(os.path.join( tok, xml_file ))
                 if os.path.exists( path ):
                     result = path
@@ -138,7 +141,7 @@ class Shader(Item):
     def createGui(self, parent):
         pane = AppearancePane( self, parent, wx.BORDER_NONE )        
         sizer = parent.GetSizer()
-        sizer.Add( pane, 1, wx.ALL|wx.EXPAND )
+        sizer.Add( pane, 0 )
         sizer.Layout()        
         self.gui = pane
         

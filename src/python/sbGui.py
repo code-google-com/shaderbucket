@@ -142,14 +142,14 @@ class App(wx.App):
         dlg.Destroy()   
     
     def destroy( self, event ):
-        print "go bye bye"
         self.win.Destroy()
 
     # load the xrc and create the main_frame
     def OnInit(self, bucket=None):
         self.xrc = wx.xrc.EmptyXmlResource()
         self.xrc.InitAllHandlers()
-        if not self.xrc.Load( "src/xrc/shaderbucket.xrc" ):
+        cwd = os.getenv( "SHADERBUCKET_ROOT", os.getcwd() )
+        if not self.xrc.Load( os.path.join( cwd, "src/xrc/shaderbucket.xrc" ) ):
             print "ERROR: Could not load ShaderBucket XRC gui file!"
             return False
             
@@ -169,24 +169,15 @@ class App(wx.App):
         if not self.win:
             print "ERROR: Could not load frame from XRC!"
             return False
-        print "menu: %d" % wx.xrc.XmlResource.GetXRCID( "main_menubar" )
-        #if not self.menu:
-        #    print "ERROR: Could not load menu from XRC!"
-        #    return False
-            
+        
+        # store all our controls for easy access later
         self.contents = {}
         self.StoreChildrenByName( self.win, self.contents )
-        
-        print ""
-        for name in self.contents.iterkeys():
-            print name
-        print ""
 
         if self.bucket:
             self.contents['palette_tree'].bucket = self.bucket
             self.contents['palette_tree'].appearance_window = self.contents['appearance_panel']
-            self.contents['palette_tree'].rebuild()
-            #self.contents['palette_tree'].ExpandAll()            
+            self.contents['palette_tree'].rebuild()          
             self.bucket.gui = self.win
 
         # setup some gui components
