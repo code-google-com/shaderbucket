@@ -4,7 +4,6 @@
 import sys, os
 import wx
 import wx.xrc
-from wx.lib.evtmgr import eventManager
 from sbPalette import Palette, Appearance
 from sbShader import Shader
 
@@ -24,8 +23,17 @@ class PaletteTree(wx.TreeCtrl):
         self.clear()
         self.appearance_window = None
         self.last_appearance = None
-        eventManager.Register(self.changeLabel, wx.EVT_TREE_END_LABEL_EDIT, self)
-        eventManager.Register(self.selectionChange, wx.EVT_TREE_SEL_CHANGED, self)
+        self.Bind( wx.EVT_TREE_END_LABEL_EDIT, self.changeLabel )
+        self.Bind( wx.EVT_TREE_SEL_CHANGED, self.selectionChange )
+        
+        # images        
+        isz = (16,16)
+        il = wx.ImageList(isz[0], isz[1])
+        il.Add(wx.Bitmap( "share/icons/folder.png", wx.BITMAP_TYPE_ANY ))
+        il.Add(wx.Bitmap( "share/icons/folder_open.png", wx.BITMAP_TYPE_ANY ))  
+        il.Add(wx.Bitmap( "share/icons/appearance.png", wx.BITMAP_TYPE_ANY ))   
+        self.SetImageList(il) 
+        self.il = il
         
     def addPalette(self, parent, palette):
         node = None
@@ -33,6 +41,8 @@ class PaletteTree(wx.TreeCtrl):
             node = self.root = self.AddRoot("ShaderBucket")
         else:
             node = self.AppendItem(parent, palette.getAttribute('name'), data=wx.TreeItemData(palette) )
+            self.SetItemImage( node, 0, wx.TreeItemIcon_Normal)
+            self.SetItemImage( node, 1, wx.TreeItemIcon_Expanded)
         for item in palette.contents:
             if isinstance(item,Palette):
                 self.addPalette(node, item)
@@ -43,6 +53,7 @@ class PaletteTree(wx.TreeCtrl):
         appearance.createGui( self.appearance_window )
         self.hideAppearance( appearance )
         app = self.AppendItem(parent, appearance.getAttribute('name'), data=wx.TreeItemData(appearance) ) 
+        self.SetItemImage( app, 2, wx.TreeItemIcon_Normal)
         
     def clear(self):
         self.DeleteAllItems()
@@ -71,6 +82,8 @@ class PaletteTree(wx.TreeCtrl):
         lbl = evt.GetLabel()
         if data and lbl!="":
             data.setAttribute( 'name', evt.GetLabel() )
+        evt.Skip()
+            
     def selectionChange(self,evt):
         data = self.GetItemPyData(evt.GetItem())
         if data:
@@ -79,7 +92,8 @@ class PaletteTree(wx.TreeCtrl):
                 self.hideAppearance( self.last_appearance )
             if data.gui:
                 self.showAppearance( data )
-                self.last_appearance = data        
+                self.last_appearance = data   
+        evt.Skip()     
 
 class PaletteTreeXmlHandler(wx.xrc.XmlResourceHandler):
     def __init__(self):
@@ -89,6 +103,7 @@ class PaletteTreeXmlHandler(wx.xrc.XmlResourceHandler):
         self.AddStyle("wxTAB_TRAVERSAL", wx.TAB_TRAVERSAL)
         self.AddStyle("wxWS_EX_VALIDATE_RECURSIVELY", wx.WS_EX_VALIDATE_RECURSIVELY)
         self.AddStyle("wxCLIP_CHILDREN", wx.CLIP_CHILDREN)
+        self.AddStyle("wxTR_HAS_BUTTONS", wx.TR_HAS_BUTTONS)
         self.AddWindowStyles()
 
     def CanHandle(self, node):
@@ -99,7 +114,7 @@ class PaletteTreeXmlHandler(wx.xrc.XmlResourceHandler):
         
         tree = PaletteTree(self.GetParentAsWindow(),
                             # self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_EDIT_LABELS) )
-                             self.GetStyle(defaults=wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT) )
+                             self.GetStyle(defaults=wx.TR_FULL_ROW_HIGHLIGHT|wx.TR_HIDE_ROOT|wx.TR_NO_LINES|wx.BORDER_SUNKEN ) )
         self.SetupWindow(tree)
         self.CreateChildren(tree)
 

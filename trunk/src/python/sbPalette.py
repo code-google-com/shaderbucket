@@ -74,10 +74,10 @@ class Palette(Item):
         self.contents.append(copy.copy(palette))
         
     # load a palette into this instance
-    def load(self, filename):
+    def load(self, filename, createPalette=False):
         self.cwd = os.path.dirname( filename )
         parser = xml.sax.make_parser()
-        parser.setContentHandler( paletteReader(self) )
+        parser.setContentHandler( paletteReader(self, createPalette) )
         parser.parse( filename )
         
     # save this instance to a file
@@ -102,7 +102,7 @@ class Appearance(Item):
 # Create a class to handle reader palette files
 class paletteReader(xml.sax.handler.ContentHandler):
     # init palette reader
-    def __init__(self, parent):        
+    def __init__(self, parent, createPalette=True):        
         # shaders/parameters
         self.curr_appearance = None
         self.curr_parameter = None        
@@ -110,6 +110,7 @@ class paletteReader(xml.sax.handler.ContentHandler):
         self.palettes = [parent]
         self.curr_palette = parent
         self.done_top_level = False
+        self.create_top_palette = createPalette
         # mode
         self.mode = []
         self.bucket = parent.bucket
@@ -155,24 +156,30 @@ class paletteReader(xml.sax.handler.ContentHandler):
 
     # start/end palettes
     def startPalette(self, attrs):
+        pass
+        '''
         if self.done_top_level:
             self.curr_palette = Palette(self.bucket) # create a new palette
             self.curr_palette.filename = self.parent.filename # inherit filename & cwd
             self.curr_palette.cwd = self.parent.cwd
             
         for name in attrs.getNames():
+            print name, attrs.getValue(name)
             self.curr_palette.setAttribute(name, attrs.getValue(name))
         if self.done_top_level:
             self.palettes.append( self.curr_palette ) # push onto the end of the stack
         else:
             self.done_top_level = True
+        '''
 
     def endPalette(self):
+        pass
+    '''
         if len(self.palettes)>1:
             self.palettes = self.palettes[:-1] # pop from the end of the stack
             self.palettes[-1].addPalette( self.curr_palette ) # add to the previous palette
             self.curr_palette = self.palettes[-1] # set current to previous palette
-
+    '''
     # start/end shaders
     def startAppearance(self, attrs):
         self.curr_appearance = Appearance()

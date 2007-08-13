@@ -7,6 +7,19 @@ import os.path
 from wx.lib.evtmgr import eventManager
 import wx.lib.colourselect as csel
 import colorsys
+
+class InfoBtn(wx.BitmapButton):
+    def __init__(self, parent, msg):
+        wx.BitmapButton.__init__(self, parent, -1, wx.Bitmap("share/icons/info.png", wx.BITMAP_TYPE_ANY),  style=wx.NO_BORDER|wx.BU_EXACTFIT )
+        self.Bind(wx.EVT_ENTER_WINDOW, self.showInfo)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self.hideInfo)
+        self.help_string = msg
+    def showInfo( self, event ):
+        self.SetBitmapLabel( wx.Bitmap("share/icons/info_over.png", wx.BITMAP_TYPE_ANY) )
+        wx.LogStatus( self.help_string )
+    def hideInfo( self, event ):
+        self.SetBitmapLabel( wx.Bitmap("share/icons/info.png", wx.BITMAP_TYPE_ANY) )
+        wx.LogStatus( "" )   
         
 class CtrlValidator(wx.PyValidator):
     def __init__(self, flag, update_func=None):
@@ -47,15 +60,18 @@ class Ctrl(wx.Panel):
         self.SetSizer( self.sizer )
         
         # common widgets
-        self.help_btn = wx.Button(self, -1, "")
-        self.help_btn.SetMinSize((15, 15))
+        self.help_btn = InfoBtn(self, parameter.getAttribute("help"))
+        #self.help_btn.SetMinSize((15, 15))
         
-        self.lbl = wx.StaticText(self, -1, parameter.getAttribute('name'), size=(160,20))
+        name_string = parameter.getAttribute('name')
+        if parameter.hasAttribute("text"):
+            name_string = parameter.getAttribute('text')
+        self.lbl = wx.StaticText(self, -1, name_string, size=(160,20))
         self.lbl.SetMinSize((120, 17))
         
-        self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add( (5,20), 0, wx.ADJUST_MINSIZE, 0)
         self.sizer.Add( self.help_btn, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
-        self.sizer.Add( (10,20), 0, wx.ADJUST_MINSIZE, 0)
+        self.sizer.Add( (5,20), 0, wx.ADJUST_MINSIZE, 0)
         self.sizer.Add( self.lbl, 0, wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
         self.sizer.Add( (20,20), 0, wx.ADJUST_MINSIZE, 0)
     
