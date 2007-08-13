@@ -6,19 +6,19 @@
 	<description>Simple test shader example for ShaderBuddy.</description>
 		
 	<!-- example colour parameter -->
-	<parameter name="baseColour" type="colour" help="Base colour." default="0.18,0.18,0.18" />
+	<parameter name="baseColour" text="Base Colour" type="colour" help="Base colour." default="0.18,0.18,0.18" />
 		
 	<!-- a group of shader parameters -->
 	<group name="Texturing" expand="false">
 		
 		<!-- a checkbox -->
-		<parameter name="useTextures" label="Enable" type="bool" help="Turns texturing on/off." default="true" />
+		<parameter name="useTextures" text="Use Textures" label="Enable" type="bool" help="Turns texturing on/off." default="true" />
 			
 		<!-- a seperator -->
 		<seperator />
 			
 		<!-- a file string -->
-		<parameter name="textureFile" label="Texture File" type="file" help="Filename for the base texture." default="" />
+		<parameter name="textureFile" text="Texture File" label="Texture File" type="file" help="Filename for the base texture." default="" />
 			
 	</group>
 	<!-- end group -->
