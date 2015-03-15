@@ -1,0 +1,40 @@
+# Example File #
+```
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- example palette -->
+<palette name="Example Palette" icon="palette.png">
+
+    <!-- a description for our palette -->
+	<note>Example palette to demonstrate the shaderBucket palette system.</note>
+	
+    <!-- an instance of our simple shader -->
+	<shader name="Test Shader" file="../shaders/simple.sdl">
+        <parameter name="useTextures">1</parameter>
+        <parameter name="textureFile">simple.tdl</parameter>	
+	</shader>
+	
+    <!-- a group of shaders -->
+	<palette name="A group of shaders..." expand="true">
+    
+        <!-- grey shader -->
+        <shader name="Grey Shader" file="../shaders/simple.sdl">
+            <note>This is an example of some annotation on a shader instance.</note>
+            <parameter name="baseColour">0.18, 0.18, 0.18</parameter>
+			<parameter name="useTextures">0</parameter>
+            <parameter name="textureFile"></parameter>
+        </shader>
+        
+        <!-- black shader -->
+        <shader name="Black Shader" file="../shaders/simple.sdl" preview="simple.png">
+            <note>And again with a note :)</note>
+            <parameter name="baseColour">0,0,0</parameter>
+			<parameter name="useTextures">0</parameter>
+        </shader>
+	
+    </palette>
+    <!-- end group -->
+    
+</palette>
+<!-- end palette -->
+```
